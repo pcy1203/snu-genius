@@ -1,39 +1,41 @@
 import { Outlet } from "react-router-dom";
 import styled from "styled-components";
 import NavigationBar from "./NavigationBar";
+import colors from "../styles/colors";
 
 const HTMLContainer = styled.div`
     width: 100%;
     height: 100vh;
     position: relative;
-    background: #ffffffff;
+    background: ${colors.main};
 `;
 
 const NavContainer = styled.div`
-    width: 1200px;
-    height: 80px;
+    width: 100vw;
+    height: 60px;
     position: fixed;
     top: 0;
-    left: calc(50vw - 600px);
+    left: 0;
     z-index: 10;
-    background: #ffffff;
+    background: ${colors.main};
+    display: flex;
+    justify-content: center;
 `;
 
-const Line = styled.hr`
-    width: 100%;
-    position: fixed;
-    top: 71px;
-    z-index: 11;
-    border: none;
-    height: 1px;
-    background-color: rgba(0,0,0,0.1);
+const NavInner = styled.div`
+    width: 1200px;
+    left: -200;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 `;
 
 const BodyContainer = styled.div`
     width: 100vw;
-    min-height: calc(100% - 80px);
+    min-height: calc(100% - 60px);
     position: relative;
-    top: 80px;
+    top: 60px;
     background: #ffffff;
 `;
 
@@ -41,9 +43,10 @@ export default function Layout() {
   return (
     <HTMLContainer>
       <NavContainer>
-        <NavigationBar />
+        <NavInner>
+          <NavigationBar />
+        </NavInner>
       </NavContainer>
-      <Line></Line>
       <BodyContainer>
         <Outlet />
       </BodyContainer>
