@@ -232,6 +232,7 @@ export default function QuestionInquiry() {
       // buttons: [{ label: "교과목 목록", link: "" }],
     },
   ]);
+  const [requirements, setRequirements] = useState([]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -250,12 +251,22 @@ export default function QuestionInquiry() {
 
       const llmAnswer: string = response.data.llm_answer;
 
+      if (response.data.requirement && Array.isArray(response.data.requirement)) {
+        for (const reqId of response.data.requirement) {
+          const requirementData = await fetchRequirement(reqId);
+          if (requirementData) requirements.push(requirementData);
+        }
+      } else if (response.data.requirement) {
+        const requirementData = await fetchRequirement(response.data.requirement);
+        if (requirementData) requirements.push(requirementData);
+      }
+
       const botMessage: Message = {
         type: "bot",
         text: llmAnswer,
         tags: response.data.tag == "answer" ? ["😊 질문이 해결되었어요.", "😅 답변이 만족스럽지 않아요.", "🤔 규정에 대한 논의가 필요해보여요. (직접 문의하기)"]
           : (response.data.tag == "obscure" ? ["✉️ 문의 메일 작성하기"] : []),
-        buttons: response.data.requirement,
+        buttons: response.data.requirement ? [{"label": "규정 확인", "link": "#"}] : undefined,
       };
 
       setMessages((prev) => [...prev, botMessage]);
@@ -275,6 +286,16 @@ export default function QuestionInquiry() {
     //   };
     //   setMessages((prev) => [...prev, botReply]);
     // }, 1000);
+  };
+
+  const fetchRequirement = async (id: number) => {
+    try {
+      const response = await axios.get(`${backendURL}/api/requirements/${id}`);
+      return response.data;
+    } catch (err) {
+      console.error("Failed to load requirement:", err);
+      return null;
+    }
   };
 
   const clickTag = async (tag: string) => {
@@ -357,15 +378,15 @@ export default function QuestionInquiry() {
           </ChatContainer>
           <SidePanel>
             <SidePanelContent>
-              <PanelCard>
-                <PanelTitle>타전공 개설과목 대체 인정에 관한 시행세칙</PanelTitle>
-                <PanelText>
-                  제2조(정의) 타전공 개설과목은 자유전공학부 학생이 선택하여
-                  승인받은 주전공, 부전공, 연합전공, 연계전공의 전공필수·전공선택
-                  과목이 포함되지 않는 전공 교과목을 의미한다.
-                </PanelText>
-                <PanelLink href="#">자유전공학부 이수 규정 확인하기 ↗</PanelLink>
-              </PanelCard>
+              {requirements.map((req, index) => (
+                <PanelCard>
+                  <PanelTitle>{req?.title}</PanelTitle>
+                  <PanelText>
+                    {req?.description}
+                  </PanelText>
+                  <PanelLink href="#">자유전공학부 이수 규정 확인하기 ↗</PanelLink>
+                </PanelCard>
+              ))}
             </SidePanelContent>
           </SidePanel>
         </Container>
